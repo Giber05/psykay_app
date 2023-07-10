@@ -5,6 +5,8 @@ import 'package:flutter/material.dart';
 
 import 'package:psykay_app/infrastructure/ext/ctx_ext.dart';
 import 'package:psykay_app/infrastructure/ext/double_ext.dart';
+import 'package:psykay_app/infrastructure/widgets/buttons/elevated_button.dart';
+import 'package:psykay_app/infrastructure/widgets/buttons/outlined_button.dart';
 import 'package:psykay_app/modules/questionnaire/domain/models/assessment.dart';
 import 'package:psykay_app/modules/questionnaire/domain/models/option.dart';
 import 'package:psykay_app/modules/questionnaire/domain/models/question.dart';
@@ -21,20 +23,6 @@ class FormStep extends StatefulWidget {
 
 class _FormStepState extends State<FormStep> {
   int currentStep = 0;
-  List<Map<String, dynamic>> formSteps = [
-    {
-      'question': 'Pertanyaan 1',
-      'choices': ['Pilihan A', 'Pilihan B', 'Pilihan C'],
-    },
-    {
-      'question': 'Pertanyaan 2',
-      'choices': ['Pilihan D', 'Pilihan E', 'Pilihan F'],
-    },
-    {
-      'question': 'Pertanyaan 3',
-      'choices': ['Pilihan G', 'Pilihan H', 'Pilihan I'],
-    },
-  ];
 
   List<Question> questions = [];
   List<Option> options = [];
@@ -114,10 +102,13 @@ class _FormStepState extends State<FormStep> {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               for (var choice in options)
-                ChoiceButton(
-                  text: choice.text,
-                  isSelected: selectedChoices[currentStep] == choice.value,
-                  onPressed: () => selectChoice(choice.value),
+                Container(
+                  margin: const EdgeInsets.only(bottom: 8),
+                  child: ChoiceButton(
+                    text: choice.text,
+                    isSelected: selectedChoices[currentStep] == choice.value,
+                    onPressed: () => selectChoice(choice.value),
+                  ),
                 ),
             ],
           ),
@@ -156,9 +147,9 @@ class _FormStepState extends State<FormStep> {
             ],
           ),
           if (currentStep == questions.length - 1)
-            ElevatedButton(
+            PsykayElevatedButton(
               onPressed: submitForm,
-              child: Text('Submit'),
+              label: 'Simpan',
             )
         ],
       ),
@@ -179,14 +170,11 @@ class ChoiceButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ElevatedButton(
+    return PsykayElevatedButton(
       onPressed: onPressed,
-      child: Text(text),
-      style: ButtonStyle(
-        backgroundColor: MaterialStateProperty.all(
-          isSelected ? Colors.blue : Colors.grey,
-        ),
-      ),
+      backgroundColor: isSelected ? context.color.primary : Colors.grey,
+      label: text,
+      fillParent: true,
     );
   }
 }
