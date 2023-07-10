@@ -38,35 +38,37 @@ class QuestionnaireScreen extends StatelessWidget {
           ],
         ),
         body: BlocBuilder<QuestionnaireCubit, QuestionnaireState>(
-            builder: (context, state) {
-          if (state is QuestionnaireLoading) {
-            return const Center(
-              child: PsykayCircularLoading(),
-            );
-          }
-          if (state is QuestionnaireFailed) {
-            Center(
-              child: Column(
-                children: [
-                  Text(
-                    state.message,
-                  ),
-                  20.verticalSpace,
-                  OutlinedButton(
-                      onPressed: () {
-                        context.read<QuestionnaireCubit>().getQuestionnaire();
-                      },
-                      child: const Text('Refresh'))
-                ],
-              ),
-            );
-          }
-          if (state is QuestionnaireLoaded) {
-            return FormStep(assessment: state.assessment,);
-          }
-         return  const SizedBox();
-        },
-        
+          builder: (context, state) {
+            if (state is QuestionnaireLoading) {
+              return const Center(
+                child: PsykayCircularLoading(),
+              );
+            }
+            if (state is QuestionnaireFailed) {
+              Center(
+                child: Column(
+                  children: [
+                    Text(
+                      state.message,
+                    ),
+                    20.verticalSpace,
+                    OutlinedButton(
+                        onPressed: () {
+                          context.read<QuestionnaireCubit>().getQuestionnaire();
+                        },
+                        child: const Text('Refresh'))
+                  ],
+                ),
+              );
+            }
+            if (state is QuestionnaireLoaded) {
+              return FormStep(
+                assessment: state.assessment,
+                name: name,
+              );
+            }
+            return const SizedBox();
+          },
         ),
       ),
     );

@@ -1,10 +1,12 @@
 // ignore_for_file: public_member_api_docs, sort_constructors_first
 import 'dart:core';
 
+import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 
 import 'package:psykay_app/infrastructure/ext/ctx_ext.dart';
 import 'package:psykay_app/infrastructure/ext/double_ext.dart';
+import 'package:psykay_app/infrastructure/routing/router.gr.dart';
 import 'package:psykay_app/infrastructure/widgets/buttons/elevated_button.dart';
 import 'package:psykay_app/infrastructure/widgets/buttons/outlined_button.dart';
 import 'package:psykay_app/modules/questionnaire/domain/models/assessment.dart';
@@ -13,9 +15,11 @@ import 'package:psykay_app/modules/questionnaire/domain/models/question.dart';
 
 class FormStep extends StatefulWidget {
   final Assessment assessment;
+  final String name;
   const FormStep({
     Key? key,
     required this.assessment,
+    required this.name,
   }) : super(key: key);
   @override
   _FormStepState createState() => _FormStepState();
@@ -28,7 +32,7 @@ class _FormStepState extends State<FormStep> {
   List<Option> options = [];
   List<int> selectedChoices = [];
 
-  void submitForm() {
+  List<Question> answeredQuestion() {
     // Mengumpulkan jawaban yang dipilih dari setiap langkah
     List<Question> selectedAnswers = [];
     for (int i = 0; i < questions.length; i++) {
@@ -40,6 +44,7 @@ class _FormStepState extends State<FormStep> {
 
     // Mencetak jawaban yang dipilih ke konsol atau lakukan tindakan lainnya
     print(selectedAnswers);
+    return selectedAnswers;
 
     // Atau jika Anda ingin membersihkan state dan mengulang form setelah submit
   }
@@ -72,6 +77,24 @@ class _FormStepState extends State<FormStep> {
     questions = widget.assessment.questions;
     options = widget.assessment.options;
     selectedChoices = List<int>.filled(questions.length, 0);
+  }
+
+  Score calculateScores() {
+    final answeredQuestionList = answeredQuestion();
+    int anxietyScore = 0;
+    int depressionScore = 0;
+
+    for (int i = 0; i < answeredQuestionList.length; i++) {
+      final question = answeredQuestionList[i];
+      final answerValue = answeredQuestionList[i].answer;
+
+      if (question.category == 'Kecemasan') {
+        anxietyScore += answerValue;
+      } else if (question.category == 'Depresi') {
+        depressionScore += answerValue;
+      }
+    }
+    return Score(anxietyScore: anxietyScore, depressionScore: depressionScore);
   }
 
   @override
@@ -131,7 +154,24 @@ class _FormStepState extends State<FormStep> {
                 ),
               ),
               InkWell(
-                onTap: nextStep,
+                onTap: () {
+                  if (currentStep == questions.length - 1) {
+                    final answeredQ = answeredQuestion();
+                    final score = calculateScores();
+                    print('Score $score');
+                    final assessment = Assessment(
+                      fullName: widget.name,
+                      questions: answeredQ,
+                      options: options,
+                      anxietyScore: score.anxietyScore,
+                      depressionScore: score.depressionScore,
+                    );
+                    print('assessment');
+                    print(assessment);
+                    context.router.push(SummaryRoute(assessment: assessment));
+                  }
+                  nextStep();
+                },
                 child: Container(
                   padding: const EdgeInsets.all(8),
                   decoration: BoxDecoration(
@@ -148,7 +188,7 @@ class _FormStepState extends State<FormStep> {
           ),
           if (currentStep == questions.length - 1)
             PsykayElevatedButton(
-              onPressed: submitForm,
+              onPressed: answeredQuestion,
               label: 'Simpan',
             )
         ],
@@ -177,4 +217,13 @@ class ChoiceButton extends StatelessWidget {
       fillParent: true,
     );
   }
+}
+
+class Score {
+  final int anxietyScore;
+  final int depressionScore;
+  Score({
+    required this.anxietyScore,
+    required this.depressionScore,
+  });
 }
